@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Common;
 using System.Linq;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Moq;
 
 namespace DDDProject.Api.IntegrationTests.Common;
 
@@ -58,7 +60,18 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 options.UseSqlite(connection);
             });
 
-            // Optional: Add mock services here if needed
+            // --- Mock External Services --- 
+            // Remove existing IEmailSender registration if present (safer)
+            var emailSenderDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(IEmailSender));
+            if (emailSenderDescriptor != null)
+            {
+                services.Remove(emailSenderDescriptor);
+            }
+            // Register Mock IEmailSender
+            services.AddSingleton(new Mock<IEmailSender>().Object);
+            
+            // Add other mock services here if needed (e.g., IJwtTokenGenerator if not using real tokens)
         });
 
         builder.UseEnvironment("Testing"); // Use a specific environment for tests if needed

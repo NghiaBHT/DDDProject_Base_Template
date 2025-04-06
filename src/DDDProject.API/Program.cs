@@ -21,6 +21,10 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using DDDProject.Infrastructure.Services;
 using DDDProject.Application.Services.Authentication; // For IOptions
 using Microsoft.OpenApi.Models; // <<<< ADD THIS >>>>
+using MediatR; // <<<< ADD THIS >>>>
+using FluentValidation; // <<<< ADD THIS >>>>
+using DDDProject.Application.Common.Behaviors; // <<<< ADD THIS >>>>
+using System.Reflection; // <<<< ADD THIS >>>>
 
 // --- Logging Configuration ---
 // Capture the NLog logger
@@ -39,6 +43,23 @@ try
     // Add services from Application and Infrastructure layers
     builder.Services.AddApplicationServices();
     builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment);
+
+    // --- Add MediatR --- <<<< ADD THIS SECTION >>>>
+    builder.Services.AddMediatR(cfg => 
+    {
+        // Register handlers from the Application assembly
+        cfg.RegisterServicesFromAssembly(typeof(DDDProject.Application.DependencyInjection).Assembly); 
+        
+        // Register the validation pipeline behavior
+        // This needs to run BEFORE the actual handler
+        cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+    });
+    // <<<< END ADDED SECTION >>>>
+
+    // --- Add FluentValidation --- <<<< ADD THIS SECTION >>>>
+    // Register all validators from the Application assembly
+    builder.Services.AddValidatorsFromAssembly(typeof(DDDProject.Application.DependencyInjection).Assembly);
+    // <<<< END ADDED SECTION >>>>
 
     // --- Configure JWT Settings --- <<<<<<<<<< NEW >>>>>>>>>>
     var jwtSettings = new JwtSettings();

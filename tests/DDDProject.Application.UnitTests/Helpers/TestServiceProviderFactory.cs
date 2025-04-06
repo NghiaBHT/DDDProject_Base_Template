@@ -88,9 +88,6 @@ public static class TestServiceProviderFactory
         services.AddHttpContextAccessor(); // Needed for SignInManager/UserManager
         services.AddAuthentication(); // Needed for SignInManager dependencies
 
-        // Add the AuthService itself
-        services.AddScoped<IAuthService, AuthService>(); // Register the service
-
         // Allow specific tests to add/override services
         configureServices?.Invoke(services);
 

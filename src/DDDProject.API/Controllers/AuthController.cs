@@ -1,5 +1,8 @@
 using DDDProject.Application.Contracts.Authentication;
-using DDDProject.Application.Services.Authentication;
+using DDDProject.Application.Features.Authentication.Commands.ConfirmEmail;
+using DDDProject.Application.Features.Authentication.Commands.Register;
+using DDDProject.Application.Features.Authentication.Queries.Login;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http; // Add for StatusCodes
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +16,11 @@ namespace DDDProject.API.Controllers;
 [AllowAnonymous] // Allow access to login/register without prior authentication
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly ISender _mediator;
 
-    public AuthController(IAuthService authService)
+    public AuthController(ISender mediator)
     {
-        _authService = authService;
+        _mediator = mediator;
     }
 
     [HttpPost("register")]
@@ -25,10 +28,16 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var result = await _authService.RegisterAsync(request);
+        var command = new RegisterCommand(
+            request.FirstName,
+            request.LastName,
+            request.Email,
+            request.Password);
+
+        var result = await _mediator.Send(command);
 
         return result.IsSuccess
-            ? CreatedAtAction(nameof(Register), new { userId = result.Value } , result.Value) // Return UserId
+            ? CreatedAtAction(nameof(Register), new { userId = result.Value }, result.Value)
             : BadRequest(new { Errors = result.Errors });
     }
 
@@ -38,12 +47,12 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)] // If credentials invalid or email not confirmed
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        var result = await _authService.LoginAsync(request);
+        var query = new LoginQuery(request.Email, request.Password);
 
-        // Distinguish between bad credentials and other failures if needed
+        var result = await _mediator.Send(query);
+
         if (!result.IsSuccess)
         {
-             // Simple unauthorized for credential/confirmation issues
             return Unauthorized(new { Errors = result.Errors });
         }
 
@@ -53,14 +62,16 @@ public class AuthController : ControllerBase
     [HttpPost("confirm-email")] // Or HttpGet if using query parameters
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-     public async Task<IActionResult> ConfirmEmail(ConfirmEmailRequest request) // Or [FromQuery]
+    public async Task<IActionResult> ConfirmEmail(ConfirmEmailRequest request) // Or [FromQuery]
     {
-        var result = await _authService.ConfirmEmailAsync(request);
+        var command = new ConfirmEmailCommand(request.UserId, request.Code);
+
+        var result = await _mediator.Send(command);
 
         return result.IsSuccess
             ? Ok()
             : BadRequest(new { Errors = result.Errors });
     }
 
-     // TODO: Add endpoints for ForgotPassword, ResetPassword if needed
+    // TODO: Add endpoints for ForgotPassword, ResetPassword if needed
 } 

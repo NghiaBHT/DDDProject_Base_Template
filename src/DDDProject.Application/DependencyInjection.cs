@@ -32,7 +32,7 @@ public static class DependencyInjection
         });
 
         // Register Application Services
-        services.AddScoped<IAuthService, AuthService>();
+        // services.AddScoped<IAuthService, AuthService>();
 
         // Optional: Register other application-specific services here
         // e.g., services.AddScoped<IUserService, UserService>();
