@@ -32,9 +32,10 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                     .HasColumnName("Sku") // Map Sku.Value to the "Sku" column
                     .IsRequired()
                     .HasMaxLength(50); // Match VO constraint
+
+                // Define unique index on Sku.Value *within* the owned entity configuration
+                skuBuilder.HasIndex(s => s.Value).IsUnique();
             });
-        // Add unique index on Sku
-        builder.HasIndex(p => p.Sku).IsUnique();
 
         // Configure Value Object: Price (Money)
         // Map to owned entity columns (Price_Amount, Price_Currency)

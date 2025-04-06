@@ -23,6 +23,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Make internals visible to the Infrastructure tests project -->
+    <InternalsVisibleTo Include="DDDProject.Infrastructure.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="nlog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
