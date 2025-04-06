@@ -3,19 +3,21 @@ using DDDProject.Domain.Abstractions;
 using DDDProject.Domain.Common;
 using DDDProject.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DDDProject.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext, IUnitOfWork
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>, IUnitOfWork
 {
     private readonly IPublisher _publisher;
     private IDbContextTransaction? _currentTransaction;
 
     // DbSet properties for Aggregate Roots
-    public DbSet<Product> Products { get; set; }
+    // public DbSet<User> Users { get; set; }
     // Add other DbSets here e.g., public DbSet<Order> Orders { get; set; }
 
     public ApplicationDbContext(
@@ -28,6 +30,8 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         // Apply all configurations defined in the assembly
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
@@ -37,7 +41,15 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
         // Example: Configure soft delete query filter
         // modelBuilder.Entity<SomeEntity>().HasQueryFilter(e => !e.IsDeleted);
 
-        base.OnModelCreating(modelBuilder);
+        // Potentially customize Identity table names/schema here if needed
+        // Example:
+        // modelBuilder.Entity<ApplicationUser>().ToTable("Users");
+        // modelBuilder.Entity<IdentityRole<Guid>>().ToTable("Roles");
+        // modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+        // modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
+        // modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
+        // modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
+        // modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
     }
 
     // Override SaveChangesAsync to dispatch domain events and handle auditing
@@ -127,14 +139,17 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
 
     private async Task DispatchDomainEventsAsync(CancellationToken cancellationToken)
     {
-        var entitiesWithEvents = ChangeTracker.Entries<Entity<Guid>>() // Assuming Guid IDs, adjust if needed
+        // Adjust the entry type if ApplicationUser is now the base entity with events,
+        // or keep tracking your custom Entity<Guid> if ApplicationUser doesn't have events.
+        // Assuming ApplicationUser doesn't directly use the DomainEvents pattern here.
+        var entitiesWithEvents = ChangeTracker.Entries<Entity<Guid>>() // Track custom base Entity
             .Select(e => e.Entity)
             .Where(e => e.DomainEvents.Any())
             .ToList();
 
         foreach (var entity in entitiesWithEvents)
         {
-            var events = entity.DomainEvents.ToList(); // Copy events before clearing
+            var events = entity.DomainEvents.ToList();
             entity.ClearDomainEvents();
 
             foreach (var domainEvent in events)

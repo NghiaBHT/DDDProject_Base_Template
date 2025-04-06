@@ -3,6 +3,7 @@ using DDDProject.Application.Behaviors;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using DDDProject.Application.Services.Authentication;
 
 namespace DDDProject.Application;
 
@@ -29,6 +30,9 @@ public static class DependencyInjection
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DDDProject.Application.Behaviors.ValidationBehavior<,>));
         });
+
+        // Register Application Services
+        services.AddScoped<IAuthService, AuthService>();
 
         // Optional: Register other application-specific services here
         // e.g., services.AddScoped<IUserService, UserService>();

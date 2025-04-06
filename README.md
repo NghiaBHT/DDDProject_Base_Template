@@ -20,17 +20,26 @@ This template provides a foundation for building highly decoupled monolithic .NE
 
 ## Key Features
 
-*   **Bounded Contexts Separation:** Each conceptual bounded context (though shown as a single "Product" example here) should ideally reside in separate projects (or folders within layers for simplicity) to minimize coupling.
+*   **Bounded Contexts Separation:** Each conceptual bounded context should ideally reside in separate projects (or folders within layers for simplicity) to minimize coupling.
 *   **Clean Architecture Layers:** Strict separation between Domain, Application, Infrastructure, and Presentation (API) layers.
-*   **Vertical Slices:** Features (Commands/Queries) are organized vertically within the Application layer (e.g., `Application/Products/CreateProduct`).
+*   **Vertical Slices:** Features (Commands/Queries) are organized vertically within the Application layer (e.g., `Application/Users/CreateUser`).
 *   **CQRS with MediatR:** Segregation of command and query responsibilities.
-*   **Domain-Centric:** Emphasis on rich domain models with entities, value objects, and domain events.
+*   **Domain-Centric:** Emphasis on rich domain models with entities, value objects, aggregates, and domain events.
 *   **Repository Pattern:** Abstraction over data persistence.
 *   **Unit of Work:** Manages transactions and ensures consistency.
 *   **Pipeline Behaviors:** Cross-cutting concerns like logging and validation handled via MediatR behaviors.
 *   **Structured Logging:** Configured with NLog.
 *   **Global Exception Handling:** Standardized error responses using middleware.
 *   **Testability:** Includes setups for unit testing and architectural rule validation.
+*   **Domain Model:** Rich domain models with entities, value objects, aggregates, and domain events (e.g., `User` entity, `Money` value object).
+*   **Repositories:** Abstracting data access (e.g., `IUserRepository`).
+*   **Unit of Work:** Coordinating transactions across multiple repository operations.
+*   **Command/Query Responsibility Segregation (CQRS):** Separating read operations (Queries) from write operations (Commands).
+*   **Domain Events:** Decoupling components by publishing events when significant domain actions occur (e.g., `UserCreatedDomainEvent`).
+*   **Dependency Injection:** Managing dependencies throughout the application.
+*   **Validation:** Using libraries like FluentValidation for command/input validation.
+*   **Mapping:** Using libraries like AutoMapper to map between domain entities and DTOs.
+*   **Testing:** Includes unit and potentially integration tests (though not fully fleshed out here).
 
 ## Project Structure
 
@@ -45,14 +54,21 @@ DDDProject/
 │   ├── DDDProject.Application/   # Application Logic (Use Cases, Commands, Queries)
 │   │   ├── Behaviors/
 │   │   ├── Exceptions/
-│   │   ├── Products/             # Example Bounded Context / Feature Area
-│   │   │   ├── CreateProduct/
-│   │   │   ├── GetProductById/
-│   │   │   └── Mapping/
+│   │   ├── Users/                # Example Bounded Context / Feature Area
+│   │   │   ├── CreateUser/
+│   │   │   │   ├── CreateUserCommand.cs
+│   │   │   │   ├── CreateUserCommandHandler.cs
+│   │   │   │   └── CreateUserCommandValidator.cs
+│   │   │   ├── GetUserById/
+│   │   │   │   ├── GetUserByIdQuery.cs
+│   │   │   │   ├── GetUserByIdQueryHandler.cs
+│   │   │   │   └── UserResponse.cs
+│   │   │   └── Mapping/              # AutoMapper profiles for this feature
+│   │   │       └── UserProfile.cs
 │   │   └── DependencyInjection.cs
 │   ├── DDDProject.Domain/        # Core Domain Model (Entities, VOs, Events, Interfaces)
 │   │   ├── Abstractions/
-│   │   ├── Common/
+│   │   ├── Common/               # Shared application logic, interfaces, exceptions
 │   │   ├── Entities/
 │   │   ├── Events/
 │   │   ├── Exceptions/

@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace DDDProject.Infrastructure;
 
@@ -11,32 +13,37 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IWebHostEnvironment? environment = null)
     {
-        // Configure DbContext
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-        Guard.Against.NullOrWhiteSpace(connectionString, message: "Database connection string 'DefaultConnection' not found.");
-
-        services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        // Configure DbContext only if NOT in the "Testing" environment
+        // The testing environment will configure its own in-memory provider
+        if (environment?.EnvironmentName != "Testing")
         {
-            options.UseNpgsql(connectionString,
-                npgsqlOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
-                    // Optional: Configure resilience
-                    // sqlOptions.EnableRetryOnFailure(
-                    //     maxRetryCount: 5,
-                    //     maxRetryDelay: TimeSpan.FromSeconds(30),
-                    //     errorCodesToAdd: null);
-                });
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            Guard.Against.NullOrWhiteSpace(connectionString, message: "Database connection string 'DefaultConnection' not found.");
 
-            // Optional: Enable sensitive data logging only in development
-            // var environment = sp.GetRequiredService<IHostEnvironment>();
-            // if (environment.IsDevelopment())
-            // {
-            //     options.EnableSensitiveDataLogging();
-            // }
-        });
+            services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            {
+                options.UseNpgsql(connectionString,
+                    npgsqlOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                        // Optional: Configure resilience
+                        // sqlOptions.EnableRetryOnFailure(
+                        //     maxRetryCount: 5,
+                        //     maxRetryDelay: TimeSpan.FromSeconds(30),
+                        //     errorCodesToAdd: null);
+                    });
+
+                // Optional: Enable sensitive data logging only in development
+                // Check against the actual environment passed in, not resolving it again
+                // if (environment != null && environment.IsDevelopment())
+                // {
+                //     options.EnableSensitiveDataLogging();
+                // }
+            });
+        }
 
         // Register UnitOfWork
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
