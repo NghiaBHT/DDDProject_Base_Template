@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using DDDProject.Infrastructure.Services;
 using DDDProject.Application.Services.Authentication; // For IOptions
+using Microsoft.OpenApi.Models; // <<<< ADD THIS >>>>
 
 // --- Logging Configuration ---
 // Capture the NLog logger
@@ -96,7 +97,41 @@ try
     builder.Services.AddControllers();
     builder.Services.AddRazorPages();
     builder.Services.AddEndpointsApiExplorer(); // Needed for Swagger/OpenAPI if added later
-    // builder.Services.AddSwaggerGen(); // Add Swagger generation if needed
+    // builder.Services.AddSwaggerGen(); // <<<< REMOVE THIS >>>>
+
+    // --- Add Swagger/OpenAPI --- <<<< ADD THIS SECTION >>>>
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo { Title = "DDDProject API", Version = "v1" });
+
+        // Define the BearerAuth security scheme
+        options.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http, // Use Http for Bearer
+            Scheme = "bearer", // Must be lowercase "bearer"
+            BearerFormat = "JWT"
+        });
+
+        // Make sure swagger UI requires a Bearer token specified
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "BearerAuth" // Reference the scheme defined above
+                    }
+                },
+                new string[] {} // No specific scopes required for Bearer in this example
+            }
+        });
+    });
+    // <<<< END ADDED SECTION >>>>
 
     // --- Add Authorization --- <<<<<<<<<< UPDATED SECTION >>>>>>>>>>
     // Register the custom handler
@@ -166,8 +201,8 @@ try
     // Configure the HTTP request pipeline based on environment
     if (app.Environment.IsDevelopment())
     {
-        // app.UseSwagger();
-        // app.UseSwaggerUI();
+        app.UseSwagger(); // Enable Swagger generation endpoint
+        app.UseSwaggerUI(); // Enable Swagger UI at /swagger
         // Add developer-specific middleware like detailed error pages if not using custom middleware for all errors
         // app.UseDeveloperExceptionPage();
     }
