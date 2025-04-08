@@ -92,6 +92,7 @@ public static class DataSeeder
         // Assign specific permissions to User role
         var userPermissions = new[]
         {
+            Permission.ViewUsers,
             Permission.ViewFeatureX,
             Permission.ViewReportB
             // Add other permissions for the User role here

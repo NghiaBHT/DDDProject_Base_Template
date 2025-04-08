@@ -24,13 +24,16 @@ public class PermissionPolicyProvider : IAuthorizationPolicyProvider
     // Dynamically create policies based on the permission name
     public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
     {
-        // Check if the policy name follows the convention "Permission:..."
-        // You might adjust the prefix or convention as needed.
+        // Check if the policy name follows the convention "permission:..."
         if (policyName.StartsWith(PermissionClaimTypes.Permission, StringComparison.OrdinalIgnoreCase))
         {
             var policy = new AuthorizationPolicyBuilder();
-            // Add requirement with the permission name extracted from the policy name
-            policy.AddRequirements(new PermissionRequirement(policyName));
+            
+            // Extract just the permission name (remove the "permission:" prefix)
+            string permissionName = policyName.Substring(PermissionClaimTypes.Permission.Length + 1);
+            
+            // Add requirement with the permission name
+            policy.AddRequirements(new PermissionRequirement(permissionName));
             return Task.FromResult<AuthorizationPolicy?>(policy.Build());
         }
 
