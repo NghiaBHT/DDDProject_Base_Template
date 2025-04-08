@@ -17,7 +17,7 @@ This template provides a foundation for building highly decoupled monolithic .NE
 *   FluentAssertions (Assertion Library)
 *   Moq (Mocking Framework)
 *   NetArchTest.Rules (Architecture Testing)
-
+*   dotnet ef database update --project src/DDDProject.API/DDDProject.API.csproj
 ## Key Features
 
 *   **Bounded Contexts Separation:** Each conceptual bounded context should ideally reside in separate projects (or folders within layers for simplicity) to minimize coupling.

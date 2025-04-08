@@ -147,6 +147,15 @@ namespace DDDProject.API.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = userId.ToString(), code = code, returnUrl = returnUrl }, // Ensure userId is string
                         protocol: Request.Scheme);
 
+                    if (callbackUrl == null)
+                    {
+                        // Log the error details if necessary
+                        _logger.LogError("Could not generate callback URL for email confirmation.");
+                        // Handle the error appropriately - perhaps add a model error or redirect to an error page
+                        // For now, throw an exception to indicate the failure clearly during development
+                        throw new InvalidOperationException("Could not generate email confirmation URL.");
+                    }
+
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
@@ -156,8 +165,12 @@ namespace DDDProject.API.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
+                        // Don't sign in the user automatically
+                        // await _signInManager.SignInAsync(user, isPersistent: false);
+                        // return LocalRedirect(returnUrl);
+
+                        // Redirect to Login page, preserving the original returnUrl
+                        return RedirectToPage("./Login", new { returnUrl = returnUrl });
                     }
                 }
                 foreach (var error in result.Errors)
