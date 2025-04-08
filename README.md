@@ -108,6 +108,10 @@ DDDProject/
     *   Set `DDDProject.API` as the startup project.
     *   Run the project (e.g., using `dotnet run --project src/DDDProject.API/DDDProject.API.csproj` or via your IDE).
 
+## Current Status
+
+This template is a foundational starting point. It demonstrates the core architectural patterns but requires further development for production use (see "Further Development").
+
 ## Design Principles & Guidelines
 
 *   **Bounded Contexts:** Keep domains isolated.
@@ -119,6 +123,33 @@ DDDProject/
 *   **Error Handling:** Use custom exceptions and middleware for consistent responses.
 *   **Testing:** Write unit tests for domain/application logic and architecture tests for dependency rules.
 
+## Typical Feature Development Workflow (Example: Adding a New Command)
+
+1.  **Domain Layer (`DDDProject.Domain`):**
+    *   Define or update relevant Entities or Value Objects if needed.
+    *   Define any new Domain Events triggered by the command.
+    *   Define or update Repository interfaces if new data access methods are required.
+2.  **Application Layer (`DDDProject.Application`):**
+    *   Create a new folder for the feature (e.g., `Application/Products/CreateProduct/`).
+    *   Define the `CreateProductCommand`.
+    *   Implement the `CreateProductCommandHandler`, injecting necessary repository interfaces and domain services.
+    *   Implement the `CreateProductCommandValidator` using FluentValidation.
+    *   Define any specific DTOs (`ProductResponse`) if the command returns data.
+    *   Optionally, define AutoMapper profiles if mapping is needed between Command/Entity/DTO.
+    *   Optionally, implement Domain Event Handlers if the command publishes events.
+3.  **Infrastructure Layer (`DDDProject.Infrastructure`):**
+    *   Implement the repository interfaces defined in the Domain layer (e.g., inside `Persistence/Repositories/`).
+    *   Update `ApplicationDbContext` if new entities require mapping or configuration.
+    *   Add EF Core migrations if the database schema changes.
+4.  **Presentation Layer (`DDDProject.API`):**
+    *   Create a new Controller endpoint (or update an existing one) that maps the incoming HTTP request to the `CreateProductCommand`.
+    *   Send the command using MediatR (`IMediator.Send(...)`).
+    *   Handle the result (success or error) and return an appropriate HTTP response.
+5.  **Testing:**
+    *   Write Unit Tests for the Domain logic, Command Handler, and Validator.
+    *   Write Architecture Tests to ensure dependencies rules are maintained.
+    *   *(Optional)* Write Integration Tests to verify the feature end-to-end.
+
 ## Further Development
 
 *   Add more Bounded Contexts.
@@ -127,4 +158,6 @@ DDDProject/
 *   Configure Health Checks.
 *   Set up CI/CD pipelines.
 *   Enhance logging and monitoring.
-*   Add Swagger/OpenAPI documentation. 
+*   Add Swagger/OpenAPI documentation.
+*   Refine error handling strategies.
+*   Implement background job processing if needed. 

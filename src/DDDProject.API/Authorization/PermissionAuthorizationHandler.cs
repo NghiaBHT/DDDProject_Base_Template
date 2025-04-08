@@ -18,11 +18,6 @@ public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionReq
         {
             context.Succeed(requirement);
         }
-        // Optionally handle failure explicitly if needed, though default is failure
-        // else
-        // {
-        //     context.Fail();
-        // }
 
         return Task.CompletedTask;
     }
