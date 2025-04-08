@@ -236,6 +236,7 @@ try
 
     // Standard middleware
     // app.UseHttpsRedirection(); // Consider enabling if needed
+    app.UseStaticFiles(); // Add this line to serve files from wwwroot
 
     // --- Add Authentication & Authorization Middleware --- <<<<<<<<<< NEW >>>>>>>>>>
     app.UseAuthentication(); // Add Authentication middleware
