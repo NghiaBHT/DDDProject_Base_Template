@@ -25,6 +25,7 @@ using MediatR; // <<<< ADD THIS >>>>
 using FluentValidation; // <<<< ADD THIS >>>>
 using DDDProject.Application.Common.Behaviors; // <<<< ADD THIS >>>>
 using System.Reflection; // <<<< ADD THIS >>>>
+using DDDProject.API.Logging; // Add this for ASCII art logger
 
 // --- Logging Configuration ---
 // Capture the NLog logger
@@ -254,7 +255,10 @@ try
 
     // --- Run the Application ---
     startupLogger.Info("Starting web host..."); // Use startupLogger
+    // Log our ASCII art Hello World
+    AsciiArtLogger.LogHelloWorld3D();
     app.Run();
+    
 }
 catch (Exception ex)
 {

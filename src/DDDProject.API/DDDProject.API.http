@@ -1,6 +1,35 @@
 @DDDProject.API_HostAddress = http://localhost:5252
 
-GET {{DDDProject.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register User
+# @name RegisterUser
+POST {{DDDProject.API_HostAddress}}/api/Auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "email": "test.user@example.com",
+  "password": "Password123!"
+}
+
+### Login User
+# @name LoginUser
+POST {{DDDProject.API_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "test.user@example.com",
+  "password": "Password123!"
+}
+
+### Confirm Email
+# @name ConfirmEmail
+POST {{DDDProject.API_HostAddress}}/api/Auth/confirm-email
+Content-Type: application/json
+
+{
+  "userId": "replace-with-actual-user-id",
+  "code": "replace-with-confirmation-code"
+}
 
 ###
