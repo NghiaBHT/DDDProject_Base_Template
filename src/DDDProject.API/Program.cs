@@ -152,6 +152,15 @@ try
                 new string[] {} // No specific scopes required for Bearer in this example
             }
         });
+
+        // Set the comments path for the Swagger JSON and UI. <<<< ADD THIS >>>>
+        var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+        if (File.Exists(xmlPath))
+        {
+             options.IncludeXmlComments(xmlPath);
+        }
+        // <<<< END ADDED >>>>
     });
     // <<<< END ADDED SECTION >>>>
 
