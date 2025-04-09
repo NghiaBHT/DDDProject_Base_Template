@@ -9,6 +9,10 @@ using System.Security.Claims;
 
 namespace DDDProject.API.Controllers;
 
+/// <summary>
+/// Provides endpoints for managing user information.
+/// Requires authentication for all operations.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize] // Require authentication for all endpoints
@@ -17,6 +21,11 @@ public class UserController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole<Guid>> _roleManager;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserController"/> class.
+    /// </summary>
+    /// <param name="userManager">ASP.NET Core Identity UserManager service.</param>
+    /// <param name="roleManager">ASP.NET Core Identity RoleManager service.</param>
     public UserController(
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole<Guid>> roleManager)
@@ -25,6 +34,14 @@ public class UserController : ControllerBase
         _roleManager = roleManager;
     }
 
+    /// <summary>
+    /// Retrieves a list of all registered users along with their roles and permissions.
+    /// </summary>
+    /// <remarks>Requires the 'permission:ViewUsers' policy.</remarks>
+    /// <returns>A list of user information objects.</returns>
+    /// <response code="200">Returns the list of users.</response>
+    /// <response code="401">If the user is not authenticated.</response>
+    /// <response code="403">If the user does not have the required 'ViewUsers' permission.</response>
     [HttpGet]
     [Authorize(Policy = "permission:ViewUsers")] // Require ViewUsers permission
     public async Task<IActionResult> GetUsers()
@@ -77,6 +94,13 @@ public class UserController : ControllerBase
         return Ok(userList);
     }
 
+    /// <summary>
+    /// Retrieves the profile information for the currently authenticated user.
+    /// </summary>
+    /// <returns>The profile information of the current user, including roles and permissions.</returns>
+    /// <response code="200">Returns the current user's information.</response>
+    /// <response code="401">If the user is not authenticated or the token is invalid.</response>
+    /// <response code="404">If the user associated with the token could not be found.</response>
     [HttpGet("me")]
     public async Task<IActionResult> GetCurrentUser()
     {
@@ -128,6 +152,16 @@ public class UserController : ControllerBase
         return Ok(userInfo);
     }
 
+    /// <summary>
+    /// Retrieves the details of a specific user by their unique identifier.
+    /// </summary>
+    /// <param name="id">The GUID identifier of the user to retrieve.</param>
+    /// <remarks>Requires the 'permission:ViewUsers' policy.</remarks>
+    /// <returns>The detailed information of the specified user.</returns>
+    /// <response code="200">Returns the specified user's information.</response>
+    /// <response code="401">If the user is not authenticated.</response>
+    /// <response code="403">If the user does not have the required 'ViewUsers' permission.</response>
+    /// <response code="404">If a user with the specified ID is not found.</response>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:ViewUsers")] // Require ViewUsers permission
     public async Task<IActionResult> GetUserById(Guid id)

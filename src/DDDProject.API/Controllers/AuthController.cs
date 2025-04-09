@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace DDDProject.API.Controllers;
 
+/// <summary>
+/// Handles authentication related operations like user registration, login, and email confirmation.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [AllowAnonymous] // Allow access to login/register without prior authentication
@@ -18,16 +21,22 @@ public class AuthController : ControllerBase
 {
     private readonly ISender _mediator;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthController"/> class.
+    /// </summary>
+    /// <param name="mediator">The mediator instance for sending commands and queries.</param>
     public AuthController(ISender mediator)
     {
         _mediator = mediator;
     }
 
     /// <summary>
-    /// register
+    /// Registers a new user in the system.
     /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
+    /// <param name="request">The registration details containing first name, last name, email, and password.</param>
+    /// <returns>The ID of the newly registered user upon successful registration.</returns>
+    /// <response code="201">Returns the newly created user's ID.</response>
+    /// <response code="400">If the request data is invalid (e.g., email already exists, password doesn't meet requirements).</response>
     [HttpPost("register")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)] // Return Guid
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -46,6 +55,14 @@ public class AuthController : ControllerBase
             : BadRequest(new { Errors = result.Errors });
     }
 
+    /// <summary>
+    /// Authenticates a user and returns a JWT token upon successful login.
+    /// </summary>
+    /// <param name="request">The login credentials containing email and password.</param>
+    /// <returns>An authentication response containing the JWT token and user details.</returns>
+    /// <response code="200">Returns the authentication token and user info.</response>
+    /// <response code="400">If the request data is invalid.</response>
+    /// <response code="401">If the credentials are invalid or the email is not confirmed.</response>
     [HttpPost("login")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -64,6 +81,13 @@ public class AuthController : ControllerBase
         return Ok(result.Value);
     }
 
+    /// <summary>
+    /// Confirms a user's email address using the provided user ID and confirmation code.
+    /// </summary>
+    /// <param name="request">The request containing the user ID and email confirmation code.</param>
+    /// <returns>An OK result if the email is confirmed successfully.</returns>
+    /// <response code="200">If the email confirmation is successful.</response>
+    /// <response code="400">If the user ID or confirmation code is invalid or expired.</response>
     [HttpPost("confirm-email")] // Or HttpGet if using query parameters
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
